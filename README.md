@@ -1,18 +1,47 @@
-# Mahmoud Student Planner
+name: Build APK
 
-## Project Description
-Mahmoud Student Planner is a simple student planning project designed to help students organize their tasks and study activities.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
-## Features
-- Organize student tasks
-- Plan study activities
-- Easy and simple interface
-- Helps students manage their time
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-## Technologies Used
-- HTML
-- CSS
-- JavaScript
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-## Author
-Mahmoud Hassan
+      - name: Extract Android project
+        run: |
+          mkdir android-project
+          unzip -q "MahmoudStudentPlanner_AndroidProject (44).zip" -d android-project
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK
+        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      - name: Build APK
+        working-directory: android-project
+        run: gradle assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: MahmoudStudentPlanner-APK
+          path: android-project/app/build/outputs/apk/debug/app-debug.apk
